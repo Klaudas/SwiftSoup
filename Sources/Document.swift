@@ -408,7 +408,7 @@ public class OutputSettings: NSCopying {
      */
     public enum Syntax {case html, xml}
 
-    private var _escapeMode: Entities.EscapeMode  = Entities.EscapeMode.base
+    private var _escapeMode: Entities.EscapeMode  = Entities.EscapeMode.none
     private var _encoder: String.Encoding = String.Encoding.utf8 // Charset.forName("UTF-8")
     private var _prettyPrint: Bool = true
     private var _outline: Bool = false

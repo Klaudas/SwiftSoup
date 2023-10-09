@@ -19,7 +19,9 @@ public class Entities {
     private static let codepointRadix: Int = 36
 
     public class EscapeMode: Equatable {
-
+        
+        public static let none: EscapeMode = EscapeMode(string: Entities.none, size: .zero, id: -1)
+        
         /** Restricted entities suitable for XHTML output: lt, gt, amp, and quot only. */
         public static let xhtml: EscapeMode = EscapeMode(string: Entities.xhtml, size: 4, id: 0)
         /** Default HTML output entities. */
@@ -201,14 +203,35 @@ public class Entities {
                     reachedNonWhite = true
                 }
             }
-
+            
+//            if escapeMode == .none {
+//                
+//                if codePoint.value < Character.MIN_SUPPLEMENTARY_CODE_POINT {
+//                    let c = codePoint
+//                    if (canEncode(c, encoder)) {
+//                        accum.append(c)
+//                    } else {
+//                        appendEncoded(accum: accum, escapeMode: escapeMode, codePoint: codePoint)
+//                    }
+//                } else {
+//                    if (encoder.canEncode(String(codePoint))) {
+//                        accum.append(String(codePoint))
+//                    } else {
+//                        appendEncoded(accum: accum, escapeMode: escapeMode, codePoint: codePoint)
+//                    }
+//                }
+//                 
+//                
+//                return
+//            }
+            
             // surrogate pairs, split implementation for efficiency on single char common case (saves creating strings, char[]):
             if (codePoint.value < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
                 let c = codePoint
                 // html specific and required escapes:
                 switch (codePoint) {
                 case UnicodeScalar.Ampersand:
-                    accum.append("&amp;")
+                    accum.append(escapeMode == .none ? "&" : "&amp;")
                     break
                 case UnicodeScalar(UInt32(0xA0))!:
                     if (escapeMode != EscapeMode.xhtml) {
@@ -220,19 +243,19 @@ public class Entities {
                 case UnicodeScalar.LessThan:
                     // escape when in character data or when in a xml attribue val; not needed in html attr val
                     if (!inAttribute || escapeMode == EscapeMode.xhtml) {
-                        accum.append("&lt;")
+                        accum.append(escapeMode == .none ? "<" : "&lt;")
                     } else {
                         accum.append(c)
                     }
                     break
                 case UnicodeScalar.GreaterThan:
                     if (!inAttribute) {
-                        accum.append("&gt;")
+                        accum.append(escapeMode == .none ? ">" : "&gt;")
                     } else {
                         accum.append(c)}
                     break
                 case "\"":
-                    if (inAttribute) {
+                    if (inAttribute && escapeMode != .none) {
                         accum.append("&quot;")
                     } else {
                         accum.append(c)
@@ -304,6 +327,7 @@ public class Entities {
         }
     }
 
+    static let none: String = ""
     static let xhtml: String = "amp=12;1\ngt=1q;3\nlt=1o;2\nquot=y;0"
 
     static let base: String = "AElig=5i;1c\nAMP=12;2\nAacute=5d;17\nAcirc=5e;18\nAgrave=5c;16\nAring=5h;1b\nAtilde=5f;19\nAuml=5g;1a\nCOPY=4p;h\nCcedil=5j;1d\nETH=5s;1m\nEacute=5l;1f\nEcirc=5m;1g\nEgrave=5k;1e\nEuml=5n;1h\nGT=1q;6\nIacute=5p;1j\nIcirc=5q;1k\nIgrave=5o;1i\nIuml=5r;1l\nLT=1o;4\nNtilde=5t;1n\nOacute=5v;1p\nOcirc=5w;1q\nOgrave=5u;1o\nOslash=60;1u\nOtilde=5x;1r\nOuml=5y;1s\nQUOT=y;0\nREG=4u;n\nTHORN=66;20\nUacute=62;1w\nUcirc=63;1x\nUgrave=61;1v\nUuml=64;1y\nYacute=65;1z\naacute=69;23\nacirc=6a;24\nacute=50;u\naelig=6e;28\nagrave=68;22\namp=12;3\naring=6d;27\natilde=6b;25\nauml=6c;26\nbrvbar=4m;e\nccedil=6f;29\ncedil=54;y\ncent=4i;a\ncopy=4p;i\ncurren=4k;c\ndeg=4w;q\ndivide=6v;2p\neacute=6h;2b\necirc=6i;2c\negrave=6g;2a\neth=6o;2i\neuml=6j;2d\nfrac12=59;13\nfrac14=58;12\nfrac34=5a;14\ngt=1q;7\niacute=6l;2f\nicirc=6m;2g\niexcl=4h;9\nigrave=6k;2e\niquest=5b;15\niuml=6n;2h\nlaquo=4r;k\nlt=1o;5\nmacr=4v;p\nmicro=51;v\nmiddot=53;x\nnbsp=4g;8\nnot=4s;l\nntilde=6p;2j\noacute=6r;2l\nocirc=6s;2m\nograve=6q;2k\nordf=4q;j\nordm=56;10\noslash=6w;2q\notilde=6t;2n\nouml=6u;2o\npara=52;w\nplusmn=4x;r\npound=4j;b\nquot=y;1\nraquo=57;11\nreg=4u;o\nsect=4n;f\nshy=4t;m\nsup1=55;z\nsup2=4y;s\nsup3=4z;t\nszlig=67;21\nthorn=72;2w\ntimes=5z;1t\nuacute=6y;2s\nucirc=6z;2t\nugrave=6x;2r\numl=4o;g\nuuml=70;2u\nyacute=71;2v\nyen=4l;d\nyuml=73;2x"
